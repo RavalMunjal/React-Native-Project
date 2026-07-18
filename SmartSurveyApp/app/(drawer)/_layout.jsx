@@ -33,7 +33,6 @@ export default function DrawerLayout() {
         drawerActiveTintColor: COLORS.primary,
         drawerInactiveTintColor: COLORS.textSecondary,
         drawerLabelStyle: {
-          marginLeft: -16,
           fontSize: SIZES.body,
           fontWeight: '500',
         },
