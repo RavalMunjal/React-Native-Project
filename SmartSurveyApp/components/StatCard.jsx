@@ -6,7 +6,7 @@ import { SPACING } from '../constants/spacing';
 
 export const StatCard = ({ title, value, color = COLORS.primary }) => {
   return (
-    <View style={[styles.card, { borderLeftColor: color }]}>
+    <View style={styles.card}>
       <Text style={styles.title}>{title}</Text>
       <Text style={[styles.value, { color }]}>{value}</Text>
     </View>
@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: SPACING.m,
-    borderLeftWidth: 4,
     marginBottom: SPACING.s,
     elevation: 1,
     shadowColor: COLORS.textPrimary,

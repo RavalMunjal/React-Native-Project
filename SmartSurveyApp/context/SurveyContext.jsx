@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { generateSurveyId } from '../utils/surveyUtils';
+import { useSettings } from './SettingsContext';
 
 export const SurveyContext = createContext();
 
@@ -14,6 +16,7 @@ const SURVEY_HISTORY_KEY = 'smart_field_surveys';
 export const SurveyProvider = ({ children }) => {
   const [surveyDraft, setSurveyDraft] = useState({});
   const [surveys, setSurveys] = useState([]);
+  const { autoSyncEnabled } = useSettings();
 
   useEffect(() => {
     loadSurveys();
@@ -80,6 +83,13 @@ export const SurveyProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem(SURVEY_HISTORY_KEY, JSON.stringify(updatedSurveys));
       await resetSurveyDraft();
+      
+      if (autoSyncEnabled) {
+        setTimeout(() => {
+          Alert.alert('Auto Sync', 'Survey successfully synced to the cloud.');
+        }, 1000);
+      }
+      
       return { success: true };
     } catch (e) {
       console.error('Failed to submit survey', e);

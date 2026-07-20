@@ -21,7 +21,7 @@ export default function NewSurveyScreen() {
     if (!surveyDraft.surveyDate) {
       updateSurveyDraft({ surveyDate: new Date().toISOString() });
     }
-  }, []);
+  }, [surveyDraft.surveyDate, updateSurveyDraft]);
 
   const handleChange = (field, value) => {
     updateSurveyDraft({ [field]: value });

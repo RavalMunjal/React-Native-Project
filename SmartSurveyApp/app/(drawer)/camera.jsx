@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { AppHeader } from '../../components/AppHeader';
 import { PrimaryButton } from '../../components/PrimaryButton';
@@ -57,7 +57,7 @@ export default function CameraScreen() {
         const options = { quality: 0.7, base64: true };
         const photoData = await cameraRef.current.takePictureAsync(options);
         setPhoto({ ...photoData, capturedAt: new Date().toISOString() });
-      } catch (error) {
+      } catch (_) {
         Alert.alert('Error', 'Failed to capture photo. Please try again.');
       } finally {
         setIsCapturing(false);
@@ -73,18 +73,24 @@ export default function CameraScreen() {
   };
 
   const deletePhoto = () => {
-    Alert.alert(
-      "Delete Photo",
-      "Are you sure you want to delete this captured photo?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: () => setPhoto(null)
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (window.confirm("Are you sure you want to delete this captured photo?")) {
+        setPhoto(null);
+      }
+    } else {
+      Alert.alert(
+        "Delete Photo",
+        "Are you sure you want to delete this captured photo?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Delete", 
+            style: "destructive",
+            onPress: () => setPhoto(null)
+          }
+        ]
+      );
+    }
   };
 
   if (photo) {

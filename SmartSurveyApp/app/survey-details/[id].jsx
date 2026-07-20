@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AppHeader } from '../../components/AppHeader';
 import { ScreenContainer } from '../../components/ScreenContainer';
 import { SecondaryButton } from '../../components/SecondaryButton';
+import { PrimaryButton } from '../../components/PrimaryButton';
 import { useSurvey } from '../../context/SurveyContext';
 import { COLORS } from '../../constants/colors';
 import { SIZES } from '../../constants/typography';
@@ -31,26 +32,39 @@ export default function SurveyDetailsScreen() {
     );
   }
 
+  const handleDeleteConfirmed = async () => {
+    const surveyId = Array.isArray(id) ? id[0] : id;
+    const result = await deleteSurvey(surveyId);
+    if (result.success) {
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(drawer)/(tabs)/dashboard');
+      }
+    } else {
+      Alert.alert('Error', 'Failed to delete survey.');
+    }
+  };
+
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Survey',
-      'Are you sure you want to delete this survey?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            const result = await deleteSurvey(id);
-            if (result.success) {
-              router.back();
-            } else {
-              Alert.alert('Error', 'Failed to delete survey.');
-            }
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to delete this survey?')) {
+        handleDeleteConfirmed();
+      }
+    } else {
+      Alert.alert(
+        'Delete Survey',
+        'Are you sure you want to delete this survey?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete', 
+            style: 'destructive',
+            onPress: handleDeleteConfirmed
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const renderSection = (title, content, icon) => (
@@ -79,8 +93,6 @@ export default function SurveyDetailsScreen() {
       <AppHeader 
         title="Survey Details" 
         showBack 
-        rightIcon="trash-outline"
-        onRightPress={handleDelete}
       />
       
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -143,6 +155,19 @@ export default function SurveyDetailsScreen() {
           'clipboard-outline'
         )}
 
+        <View style={styles.actionContainer}>
+          <PrimaryButton 
+            title="Edit Survey" 
+            icon="create-outline" 
+            onPress={() => router.push(`/edit-survey/${survey.id}`)} 
+          />
+          <SecondaryButton 
+            title="Delete Survey" 
+            icon="trash-outline" 
+            onPress={handleDelete} 
+          />
+        </View>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </ScreenContainer>
@@ -152,6 +177,10 @@ export default function SurveyDetailsScreen() {
 const styles = StyleSheet.create({
   content: {
     padding: SPACING.m,
+  },
+  actionContainer: {
+    marginTop: SPACING.m,
+    gap: SPACING.m,
   },
   errorContainer: {
     flex: 1,

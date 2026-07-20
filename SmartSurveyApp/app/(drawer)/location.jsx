@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import { AppHeader } from '../../components/AppHeader';
+import MapComponent from '../../components/MapComponent';
 import { PrimaryButton } from '../../components/PrimaryButton';
 import { SecondaryButton } from '../../components/SecondaryButton';
 import { ScreenContainer } from '../../components/ScreenContainer';
@@ -12,22 +13,26 @@ import { SIZES } from '../../constants/typography';
 import { SPACING } from '../../constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function LocationScreen() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { setCurrentLocation } = useSurvey();
+  const { locationEnabled } = useSettings();
   const router = useRouter();
 
-  useEffect(() => {
-    fetchLocation();
-  }, []);
-
-  const fetchLocation = async () => {
+  const fetchLocation = useCallback(async () => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
+      if (!locationEnabled) {
+        setErrorMsg('Location services are disabled in settings.');
+        setIsLoading(false);
+        return;
+      }
+
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied.');
@@ -42,12 +47,16 @@ export default function LocationScreen() {
         accuracy: locationData.coords.accuracy,
         timestamp: locationData.timestamp || Date.now()
       });
-    } catch (error) {
-      setErrorMsg('Unable to fetch your current location. Please try again.');
+    } catch (_) {
+      setErrorMsg('Failed to fetch location. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [locationEnabled]);
+
+  useEffect(() => {
+    fetchLocation();
+  }, [fetchLocation]);
 
   const handleCopy = () => {
     if (location) {
@@ -81,10 +90,11 @@ export default function LocationScreen() {
           </View>
         ) : location ? (
           <View style={styles.locationContainer}>
+            <View style={styles.mapContainer}>
+              <MapComponent location={location} />
+            </View>
+
             <View style={styles.card}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="map-outline" size={32} color={COLORS.primary} />
-              </View>
               
               <View style={styles.dataRow}>
                 <Text style={styles.label}>Latitude:</Text>
@@ -147,6 +157,17 @@ const styles = StyleSheet.create({
   },
   locationContainer: {
     flex: 1,
+  },
+  mapContainer: {
+    height: 250,
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: SPACING.l,
+    backgroundColor: COLORS.border,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
   card: {
     backgroundColor: COLORS.surface,

@@ -45,21 +45,18 @@ export default function SurveyPreviewScreen() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
-    // Simulate API call delay
-    setTimeout(async () => {
-      const result = await submitSurvey();
-      setIsSubmitting(false);
-      
-      if (result.success) {
-        Alert.alert(
-          'Survey Submitted',
-          'Your field survey has been submitted successfully!',
-          [{ text: 'Great', onPress: () => router.navigate('/(drawer)/(tabs)/dashboard') }]
-        );
-      } else {
-        Alert.alert('Submission Failed', result.error || 'An error occurred during submission.');
-      }
-    }, 1500);
+    const result = await submitSurvey();
+    setIsSubmitting(false);
+    
+    if (result.success) {
+      Alert.alert(
+        'Survey Submitted',
+        'Your field survey has been submitted successfully!',
+        [{ text: 'Great', onPress: () => router.navigate('/(drawer)/(tabs)/dashboard') }]
+      );
+    } else {
+      Alert.alert('Submission Failed', result.error || 'An error occurred during submission.');
+    }
   };
 
   const renderSection = (title, content, icon) => (

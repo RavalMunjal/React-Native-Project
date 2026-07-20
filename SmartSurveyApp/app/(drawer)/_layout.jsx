@@ -88,6 +88,30 @@ export default function DrawerLayout() {
           drawerIcon: ({ color }) => <Ionicons name="settings-outline" size={22} color={color} />,
         }}
       />
+      <Drawer.Screen
+        name="help"
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      <Drawer.Screen
+        name="privacy"
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      <Drawer.Screen
+        name="edit-profile"
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
+      <Drawer.Screen
+        name="notifications"
+        options={{
+          drawerItemStyle: { display: 'none' }
+        }}
+      />
     </Drawer>
   );
 }

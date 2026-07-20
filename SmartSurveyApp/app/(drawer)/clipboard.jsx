@@ -19,8 +19,8 @@ export default function ClipboardScreen() {
     try {
       const content = await Clipboard.getStringAsync();
       setClipboardContent(content);
-    } catch (e) {
-      console.log('Error reading clipboard', e);
+    } catch (_) {
+      // Failed to read clipboard
     }
   };
 
@@ -42,6 +42,8 @@ export default function ClipboardScreen() {
     const phone = surveyDraft.contact?.phone;
     if (phone && phone !== 'No Number') {
       copyToClipboard(phone, 'Contact number copied successfully.');
+    } else {
+      Alert.alert('Not Available', 'No contact number is available in the current draft.');
     }
   };
 
@@ -50,6 +52,8 @@ export default function ClipboardScreen() {
     if (loc) {
       const text = `Latitude: ${loc.latitude.toFixed(6)}, Longitude: ${loc.longitude.toFixed(6)}`;
       copyToClipboard(text, 'Location copied successfully.');
+    } else {
+      Alert.alert('Not Available', 'No location data is available in the current draft.');
     }
   };
 
@@ -63,7 +67,7 @@ export default function ClipboardScreen() {
       } else {
         Alert.alert('Empty', 'Clipboard is empty.');
       }
-    } catch (error) {
+    } catch (_) {
       Alert.alert('Error', 'Failed to paste from clipboard.');
     }
   };
@@ -73,7 +77,7 @@ export default function ClipboardScreen() {
       await Clipboard.setStringAsync('');
       setClipboardContent('');
       Alert.alert('Success', 'Clipboard cleared successfully.');
-    } catch (error) {
+    } catch (_) {
       Alert.alert('Error', 'Failed to clear clipboard.');
     }
   };
@@ -91,7 +95,6 @@ export default function ClipboardScreen() {
             title="Copy Survey ID" 
             icon="copy-outline" 
             onPress={handleCopySurveyId} 
-            disabled={!surveyDraft.id}
           />
           
           <SecondaryButton 

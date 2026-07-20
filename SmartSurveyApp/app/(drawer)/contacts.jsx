@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput, Platform } from 'react-native';
 import * as Contacts from 'expo-contacts';
 import { AppHeader } from '../../components/AppHeader';
 import { ContactCard } from '../../components/ContactCard';
@@ -36,6 +36,18 @@ export default function ContactsScreen() {
     }
     setErrorMsg(null);
     
+    if (Platform.OS === 'web') {
+      const webMockContacts = [
+        { id: 'web1', name: 'Alice Johnson (Web)', phoneNumbers: [{ number: '+1 (555) 123-4567' }] },
+        { id: 'web2', name: 'Bob Smith (Web)', phoneNumbers: [{ number: '+1 (555) 987-6543' }] },
+        { id: 'web3', name: 'Charlie Brown (Web)', phoneNumbers: [{ number: '+1 (555) 555-0123' }] },
+      ];
+      setContacts(webMockContacts);
+      setIsLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
+
     try {
       const { status } = await Contacts.requestPermissionsAsync();
       if (status !== 'granted') {
@@ -46,19 +58,26 @@ export default function ContactsScreen() {
       }
 
       const { data } = await Contacts.getContactsAsync({
-        fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name],
+        fields: [Contacts.Fields.PhoneNumbers],
       });
 
       if (data.length > 0) {
+        // Filter out contacts without a name or phone number
+        const validContacts = data.filter(
+          contact => contact.name && contact.phoneNumbers && contact.phoneNumbers.length > 0
+        );
+
         // Sort contacts alphabetically
-        const sortedData = data.sort((a, b) => {
+        const sortedData = validContacts.sort((a, b) => {
           const nameA = a.name || '';
           const nameB = b.name || '';
           return nameA.localeCompare(nameB);
         });
         setContacts(sortedData);
+      } else {
+        setContacts([]);
       }
-    } catch (error) {
+    } catch (_) {
       setErrorMsg('Unable to fetch contacts. Please try again.');
     } finally {
       setIsLoading(false);
@@ -86,7 +105,7 @@ export default function ContactsScreen() {
       `${contact.name} has been added to the survey.`,
       [{ text: 'OK', onPress: () => router.back() }]
     );
-  }, []);
+  }, [setSelectedContact, router]);
 
   const handleCopyNumber = useCallback((number) => {
     if (number && number !== 'No Number') {

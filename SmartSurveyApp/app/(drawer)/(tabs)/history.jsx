@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, FlatList, Alert, Platform } from 'react-native';
 import { AppHeader } from '../../../components/AppHeader';
 import { SurveyCard } from '../../../components/SurveyCard';
 import { ScreenContainer } from '../../../components/ScreenContainer';
@@ -15,24 +15,32 @@ export default function HistoryScreen() {
   const { surveys, clearAllHistory } = useSurvey();
   const router = useRouter();
 
+  const handleClearHistoryConfirmed = async () => {
+    const result = await clearAllHistory();
+    if (result.success) {
+      Alert.alert('Success', 'Survey history has been cleared.');
+    }
+  };
+
   const handleClearHistory = () => {
-    Alert.alert(
-      'Clear All History',
-      'Are you sure you want to delete all survey history? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Clear All', 
-          style: 'destructive',
-          onPress: async () => {
-            const result = await clearAllHistory();
-            if (result.success) {
-              Alert.alert('Success', 'Survey history has been cleared.');
-            }
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to delete all survey history? This action cannot be undone.')) {
+        handleClearHistoryConfirmed();
+      }
+    } else {
+      Alert.alert(
+        'Clear All History',
+        'Are you sure you want to delete all survey history? This action cannot be undone.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Clear All', 
+            style: 'destructive',
+            onPress: handleClearHistoryConfirmed
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (
